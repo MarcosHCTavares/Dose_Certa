@@ -1,14 +1,15 @@
 class Medicamento {
-  String nome;
-  String dosagem;
-  List<String> horarios; // formato "08:00", "14:00"
-  DateTime? dataFinal;
+  final String nome;
+  final String dosagem;
+  final List<String> horarios; // Ex: ['08:00', '14:00']
+  final DateTime? dataFinal;
+  final String? observacoes;
 
   Medicamento({
     required this.nome,
     required this.dosagem,
     required this.horarios,
     this.dataFinal,
+    this.observacoes,
   });
 }
-
