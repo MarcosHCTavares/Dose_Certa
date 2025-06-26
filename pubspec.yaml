@@ -1,0 +1,27 @@
+name: dose_certa
+description: Aplicativo para ajudar pacientes a tomarem seus medicamentos corretamente.
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.8.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  provider: ^6.1.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.2
+  flutter_local_notifications: ^17.1.2
+  timezone: ^0.9.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  build_runner: ^2.4.9
+  hive_generator: 2.0.1
+
+flutter:
+  uses-material-design: true
