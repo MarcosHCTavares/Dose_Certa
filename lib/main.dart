@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/medicamento.dart';
@@ -8,24 +10,32 @@ import 'services/notification_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Detecta se está rodando em ambiente de testes
+  final bool isRunningTest = Platform.environment.containsKey('FLUTTER_TEST');
+
   // Inicializa Hive
-  await Hive.initFlutter();
+  if (!isRunningTest) {
+    await Hive.initFlutter();
+  }
 
   // Registra os adapters
   if (!Hive.isAdapterRegistered(0)) {
     Hive.registerAdapter(MedicamentoAdapter());
   }
-
   if (!Hive.isAdapterRegistered(1)) {
     Hive.registerAdapter(RegistroTomadaAdapter());
   }
 
-  // Abre as boxes necessárias
-  await Hive.openBox<Medicamento>('medicamentos');
-  await Hive.openBox<RegistroTomada>('registros');
+  // Abre as boxes
+  if (!isRunningTest) {
+    await Hive.openBox<Medicamento>('medicamentos');
+    await Hive.openBox<RegistroTomada>('registros');
+  }
 
   // Inicializa notificações
-  await NotificationService.initialize();
+  if (!isRunningTest) {
+    await NotificationService.initialize();
+  }
 
   runApp(const DoseCertaApp());
 }

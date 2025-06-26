@@ -11,6 +11,7 @@ class RegistroTomadaScreen extends StatefulWidget {
 }
 
 class _RegistroTomadaScreenState extends State<RegistroTomadaScreen> {
+  final _formKey = GlobalKey<FormState>();
   Medicamento? _medSelecionado;
   bool _tomou = true;
   DateTime _horarioTomado = DateTime.now();
@@ -40,6 +41,20 @@ class _RegistroTomadaScreenState extends State<RegistroTomadaScreen> {
     }
   }
 
+  Future<void> _salvarRegistro() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      final box = Hive.box<RegistroTomada>('registros');
+      await box.add(RegistroTomada(
+        nomeMedicamento: _medSelecionado!.nome,
+        horarioTomado: _horarioTomado,
+        sintomas: sintomasController.text.isNotEmpty ? sintomasController.text : null,
+      ));
+
+      if (!mounted) return;
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final medicamentos = Hive.box<Medicamento>('medicamentos').values.toList();
@@ -48,63 +63,56 @@ class _RegistroTomadaScreenState extends State<RegistroTomadaScreen> {
       appBar: AppBar(title: const Text('Registrar Tomada')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            DropdownButtonFormField<Medicamento>(
-              decoration: const InputDecoration(labelText: 'Medicamento'),
-              items: medicamentos.map((med) {
-                return DropdownMenuItem(
-                  value: med,
-                  child: Text(med.nome),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() => _medSelecionado = value),
-              validator: (value) => value == null ? 'Selecione um medicamento' : null,
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              title: const Text('Horário da tomada'),
-              subtitle: Text(
-                '${_horarioTomado.hour.toString().padLeft(2, '0')}:${_horarioTomado.minute.toString().padLeft(2, '0')}',
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.access_time),
-                onPressed: _selecionarHorario,
-              ),
-            ),
-            SwitchListTile(
-              title: const Text('Tomou o medicamento?'),
-              value: _tomou,
-              onChanged: (val) => setState(() => _tomou = val),
-            ),
-            TextFormField(
-              controller: sintomasController,
-              decoration: const InputDecoration(
-                labelText: 'Sintomas (opcional)',
-              ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                if (_medSelecionado == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Por favor, selecione um medicamento')),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              DropdownButtonFormField<Medicamento>(
+                decoration: const InputDecoration(labelText: 'Medicamento'),
+                items: medicamentos.map((med) {
+                  return DropdownMenuItem(
+                    value: med,
+                    child: Text(med.nome),
                   );
-                  return;
-                }
-                final box = Hive.box<RegistroTomada>('registros');
-                await box.add(RegistroTomada(
-                  nomeMedicamento: _medSelecionado!.nome,
-                  horarioTomado: _horarioTomado,
-                  sintomas: sintomasController.text.isNotEmpty ? sintomasController.text : null,
-                ));
-                if (!mounted) return;
-                Navigator.pop(context);
-              },
-              child: const Text('Salvar Registro'),
-            ),
-          ],
+                }).toList(),
+                onChanged: (value) => setState(() => _medSelecionado = value),
+                validator: (value) => value == null ? 'Selecione um medicamento' : null,
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                title: const Text('Horário da tomada'),
+                subtitle: Text(
+                  '${_horarioTomado.hour.toString().padLeft(2, '0')}:${_horarioTomado.minute.toString().padLeft(2, '0')}',
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.access_time),
+                  onPressed: _selecionarHorario,
+                ),
+              ),
+              SwitchListTile(
+                title: const Text('Tomou o medicamento?'),
+                value: _tomou,
+                onChanged: (val) => setState(() => _tomou = val),
+              ),
+              TextFormField(
+                controller: sintomasController,
+                decoration: const InputDecoration(
+                  labelText: 'Sintomas (opcional)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _salvarRegistro,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  textStyle: const TextStyle(fontSize: 16),
+                ),
+                child: const Text('Salvar Registro')
+              ),
+            ],
+          ),
         ),
       ),
     );
